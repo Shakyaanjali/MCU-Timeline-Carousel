@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+const userKey = "38a848f0eb613aa2c80ddf98f614b96a"
+</script>
+  <title>MCU Timeline Carousel || Web Obsession 2.0</title>
+</head>
+<body>
+  <div id="app">
+    <transition name="carousel-fade" mode="out-in">
+      <div class="load-screen" v-if="loading" key="1">
+        <p>Loading MCU Timeline</p>
+      </div>
+      <div class="load-screen" v-else-if="!loading &amp;&amp; error" key="2">
+        <p>Timeline could not assemble</p>
+      </div>
+      <main class="main-screen" v-else="v-else" key="3" :class="{ 'show-modal' : showModal }">
+        <carousel v-if="movies.length" :class="scrollDirection" :options="carouselOptions" :movies="movies" :current="current" @scroll-direction="handleScrollDirection" @set-current="handleCurrentSlide" @trigger-modal="handleModal"></carousel>
+        <transition name="modal">
+          <modal v-if="showModal" :id="movies[current].id" @trigger-modal="handleModal"></modal>
+        </transition>
+      </main>
+    </transition>
+  </div>
+  <!-- Component templates-->
+  <template id="tpl__carousel">
+    <div class="carousel">
+      <div class="image__viewport">
+        <transition name="fade" mode="out-in">
+          <carousel-image class="carousel__image" v-if="index === current" v-for="movie, index in movies" :backdrop="movie.backdrop_path" size="1280" :key="movie.id"></carousel-image>
+        </transition>
+      </div>
+      <embla ref="embla" :options="options">
+        <carousel-item v-for="movie in movies" :title="movie.title" :key="movie.id" v-on="$listeners"></carousel-item>
+      </embla>
+      <transition name="fade">
+        <button class="btn btn--prev" v-if="canScrollPrev()" @click="scrollPrev">
+          <svg class="icon--control" viewBox="0 0 24 24">
+            <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path>
+          </svg>
+        </button>
+      </transition>
+      <transition name="fade">
+        <button class="btn btn--next" v-if="canScrollNext()" @click="scrollNext">
+          <svg class="icon--control" viewBox="0 0 24 24">
+            <path d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z"></path>
+          </svg>
+        </button>
+      </transition>
+      <div class="timeline">
+        <div class="dot" v-for="movie, index in movies" :class="{ current : index === current }" @click="scrollTo(index)">
+          <div class="dot__image-wrapper">
+            <carousel-image :backdrop="movie.poster_path" size="154" :key="movie.id"></carousel-image>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+  <template id="tpl__embla">
+    <div class="carousel__viewport">
+      <div class="carousel__container">
+        <slot></slot>
+      </div>
+    </div>
+  </template>
+  <template id="tpl__carousel-item">
+    <li class="carousel__slide">
+      <h2 class="slide__title">{{ title }}</h2>
+      <button class="btn btn--cta" @click="handleModal">
+        <svg class="icon--play" viewBox="0 0 24 24">
+          <path d="M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M10,16.5L16,12L10,7.5V16.5Z"></path>
+        </svg><span>Watch trailer</span>
+      </button>
+    </li>
+  </template>
+  <template id="tpl__carousel-image"><img :src="src"/></template>
+  <template id="tpl__modal">
+    <div class="modal">
+      <div class="modal__overlay" @click="handleModal"></div>
+      <div class="modal__wrapper">
+        <iframe v-if="src" :src="src" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="allowfullscreen"></iframe>
+        <button class="btn btn--close" title="Close trailer window" @click="handleModal">
+          <svg class="icon--close" viewBox="0 0 24 24">
+            <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </template>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.min.js"></script>
+  <script src="https://unpkg.com/embla-carousel@2.9.1/lib/index.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
